@@ -14,7 +14,8 @@ class ServiceController extends Controller
      */
     public function getServices(Request $request): JsonResponse
     {
-        $query = Service::active();
+        // Get only enabled services (status = 1)
+        $query = Service::enabled();
 
         // If search term is provided, filter the services
         if ($request->has('search') && !empty($request->search)) {
@@ -38,7 +39,7 @@ class ServiceController extends Controller
         $serviceIds = $request->input('service_ids', []);
         
         $selectedServices = Service::whereIn('id', $serviceIds)
-            ->active()
+            ->enabled()
             ->orderBy('name')
             ->get();
 

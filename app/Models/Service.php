@@ -12,19 +12,55 @@ class Service extends Model
     protected $fillable = [
         'name',
         'description',
-        'is_active'
+        'status'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'status' => 'integer'
     ];
 
+    // Status constants for better code readability
+    const STATUS_DISABLED = 0;
+    const STATUS_ENABLED = 1;
+
     /**
-     * Scope to get only active services
+     * Scope to get only enabled services (status = 1)
      */
-    public function scopeActive($query)
+    public function scopeEnabled($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('status', self::STATUS_ENABLED);
+    }
+
+    /**
+     * Scope to get only disabled services (status = 0)
+     */
+    public function scopeDisabled($query)
+    {
+        return $query->where('status', self::STATUS_DISABLED);
+    }
+
+    /**
+     * Scope to get services by specific status
+     */
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Check if service is enabled
+     */
+    public function isEnabled()
+    {
+        return $this->status == self::STATUS_ENABLED;
+    }
+
+    /**
+     * Check if service is disabled
+     */
+    public function isDisabled()
+    {
+        return $this->status == self::STATUS_DISABLED;
     }
 
     /**
