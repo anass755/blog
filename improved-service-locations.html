@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Locations</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+        
+        .card {
+            margin-bottom: 30px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            border: none;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .location-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .location-title {
+            font-weight: 700;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .location-id {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .map-container {
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .map-container:hover {
+            transform: scale(1.02);
+        }
+        
+        .map-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            backdrop-filter: blur(2px);
+        }
+        
+        .map-content {
+            z-index: 2;
+            position: relative;
+        }
+        
+        .map-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .map-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .map-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .card-body {
+            padding: 25px;
+            background: white;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+        
+        .info-item:hover {
+            background: #e9ecef;
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+        
+        .info-icon.serving { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        .info-icon.pricing { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+        .info-icon.unit { background: rgba(23, 162, 184, 0.1); color: #17a2b8; }
+        
+        .info-content {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            color: #6c757d;
+            font-size: 15px;
+        }
+        
+        .card-footer {
+            background: #f8f9fa;
+            border: none;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .btn {
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-info { background: linear-gradient(45deg, #17a2b8, #20c997); }
+        .btn-primary { background: linear-gradient(45deg, #007bff, #6610f2); }
+        .btn-danger { background: linear-gradient(45deg, #dc3545, #e83e8c); }
+        
+        /* Map gradients for different cards */
+        .map-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .map-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .map-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .map-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .map-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .map-6 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        
+        /* Decorative elements */
+        .map-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-4 font-weight-bold text-dark mb-3">Service Locations</h1>
+            <p class="lead text-muted">Manage and monitor your service locations</p>
+        </div>
+        
+        <div class="row">
+            <!-- Card 1 -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="location-header">
+                            <div class="location-title">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                Downtown Office
+                            </div>
+                            <span class="badge bg-success status-badge">Active</span>
+                        </div>
+                        <div class="location-id">1</div>
+                    </div>
+                    
+                    <div class="map-container map-1" onclick="openMap('Downtown Office')">
+                        <div class="map-overlay">
+                            <div class="map-content">
+                                <i class="fas fa-map-marked-alt map-icon"></i>
+                                <div class="map-title">Interactive Map</div>
+                                <div class="map-subtitle">Click to view location</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-icon serving">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Serving Radius</span>
+                                <span class="info-value">25 KM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon pricing">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Pricing</span>
+                                <span class="info-value">$150.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon unit">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Price Unit</span>
+                                <span class="info-value">per hour</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <button class="btn btn-info btn-sm mr-2" onclick="viewMap('Downtown Office')">
+                            <i class="fas fa-map mr-1"></i>View Map
+                        </button>
+                        <button class="btn btn-primary btn-sm mr-2" onclick="editLocation(1)">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteLocation(1)">
+                            <i class="fas fa-trash mr-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <div class="location-header">
+                            <div class="location-title">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                Uptown Branch
+                            </div>
+                            <span class="badge bg-warning status-badge text-dark">Inactive</span>
+                        </div>
+                        <div class="location-id">2</div>
+                    </div>
+                    
+                    <div class="map-container map-2" onclick="openMap('Uptown Branch')">
+                        <div class="map-overlay">
+                            <div class="map-content">
+                                <i class="fas fa-map-marked-alt map-icon"></i>
+                                <div class="map-title">Interactive Map</div>
+                                <div class="map-subtitle">Click to view location</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-icon serving">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Serving Radius</span>
+                                <span class="info-value">15 KM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon pricing">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Pricing</span>
+                                <span class="info-value">$200.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon unit">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Price Unit</span>
+                                <span class="info-value">per day</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <button class="btn btn-info btn-sm mr-2" onclick="viewMap('Uptown Branch')">
+                            <i class="fas fa-map mr-1"></i>View Map
+                        </button>
+                        <button class="btn btn-primary btn-sm mr-2" onclick="editLocation(2)">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteLocation(2)">
+                            <i class="fas fa-trash mr-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <div class="location-header">
+                            <div class="location-title">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                Suburban Center
+                            </div>
+                            <span class="badge bg-success status-badge">Active</span>
+                        </div>
+                        <div class="location-id">3</div>
+                    </div>
+                    
+                    <div class="map-container map-3" onclick="openMap('Suburban Center')">
+                        <div class="map-overlay">
+                            <div class="map-content">
+                                <i class="fas fa-map-marked-alt map-icon"></i>
+                                <div class="map-title">Interactive Map</div>
+                                <div class="map-subtitle">Click to view location</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-icon serving">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Serving Radius</span>
+                                <span class="info-value">30 KM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon pricing">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Pricing</span>
+                                <span class="info-value">$500.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon unit">
+                                <i class="fas fa-tag"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">Price Unit</span>
+                                <span class="info-value">fixed</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <button class="btn btn-info btn-sm mr-2" onclick="viewMap('Suburban Center')">
+                            <i class="fas fa-map mr-1"></i>View Map
+                        </button>
+                        <button class="btn btn-primary btn-sm mr-2" onclick="editLocation(3)">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteLocation(3)">
+                            <i class="fas fa-trash mr-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive functions
+        function openMap(locationName) {
+            // Simulate opening map in new tab
+            console.log(`Opening map for: ${locationName}`);
+            alert(`Opening interactive map for ${locationName}`);
+        }
+        
+        function viewMap(locationName) {
+            console.log(`Viewing map for: ${locationName}`);
+            alert(`Viewing detailed map for ${locationName}`);
+        }
+        
+        function editLocation(id) {
+            console.log(`Editing location ID: ${id}`);
+            alert(`Opening edit form for location ID: ${id}`);
+        }
+        
+        function deleteLocation(id) {
+            if (confirm(`Are you sure you want to delete location ID: ${id}?`)) {
+                console.log(`Deleting location ID: ${id}`);
+                alert(`Location ID: ${id} has been deleted`);
+            }
+        }
+        
+        // Add some interactive hover effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
